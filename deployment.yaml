@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resnet18-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resnet18-inference
+  template:
+    metadata:
+      labels:
+        app: resnet18-inference
+    spec:
+      containers:
+      - name: resnet18-inference
+        image: abm1499/resnet18-inference:latest
+        ports:
+        - containerPort: 8000
