@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>ResNet18 Inference</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>ResNet18 Inference</h1>
     <form method="post">
-      <input type="submit" value="Select Random Image">
+        <input type="submit" value="Select Random Image">
     </form>
-    {% if image_path %}
-      <img src="{{ image_path }}" alt="Selected Image">
-      <h2>Predictions:</h2>
-      <ul>
-        {% for prediction in predictions %}
-          <li>{{ prediction }}</li>
-        {% endfor %}
-      </ul>
+    {% if error %}
+    <p style="color: red;">Error: {{ error }}</p>
     {% endif %}
-  </body>
+    {% if image_filename %}
+    <img src="{{ url_for('serve_image', filename=image_filename) }}" alt="Selected Image">
+    <h2>Predictions:</h2>
+    <ul>
+        {% for prediction in predictions %}
+        <li>{{ prediction }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
 </html>

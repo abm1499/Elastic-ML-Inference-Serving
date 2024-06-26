@@ -17,3 +17,10 @@ spec:
         image: abm1499/resnet18-inference:latest
         ports:
         - containerPort: 8000
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"

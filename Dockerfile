@@ -15,7 +15,7 @@ COPY resnet18_inference.py .
 COPY templates/ ./templates/
 
 # Copy the imagenet-sample-images-master directory
-COPY imagenet-sample-images-master/ ./imagenet-sample-images-master/
+COPY imagenet-sample-images-master/ /app/imagenet-sample-images-master
 
 # Set the entry point
 CMD ["python", "resnet18_inference.py"]
