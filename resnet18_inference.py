@@ -6,9 +6,17 @@ from torchvision import models, transforms
 from flask import Flask, render_template, request, send_from_directory, jsonify
 import logging
 import io
+from prometheus_client import make_wsgi_app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from prometheus_client import Counter, Summary, Gauge, Histogram
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'http_status'])
+CURRENT_REQUESTS = Gauge('current_requests', 'Number of requests currently being processed')
+REQUEST_LATENCY = Histogram('request_latency_seconds', 'Request latency in seconds')
 
 # Load pre-trained ResNet18 model and weights
 weights = models.ResNet18_Weights.IMAGENET1K_V1
@@ -33,8 +41,18 @@ def serve_image(filename):
 def home():
     return "ResNet18 Inference Service is running!"
 
+@app.route('/metrics')
+def metrics():
+    return make_wsgi_app()
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/metrics': make_wsgi_app()
+})
+
+@REQUEST_TIME.time()
+@REQUEST_LATENCY.time()
 @app.route('/predict', methods=['POST'])
 def predict():
+    CURRENT_REQUESTS.inc()
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
