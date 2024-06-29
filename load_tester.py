@@ -73,7 +73,7 @@ def main():
     # Set up the load tester
     tester = ImageClassificationLoadTester(
         workload=workload,
-        endpoint="http://127.0.0.1:58554/predict",  # Update with your service endpoint
+        endpoint="http://127.0.0.1:60287/predict",  # Update with your service endpoint
         image_folder=os.path.join("/Users/ammar/Desktop/SS2024/Cloud_Computing/Elastic ML Inference Serving/imagenet-sample-images-master")  # Update with your image folder path
     )
 

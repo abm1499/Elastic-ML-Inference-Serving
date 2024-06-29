@@ -3,3 +3,5 @@ torch
 torchvision
 flask
 prometheus_client
+kubernetes
+requests

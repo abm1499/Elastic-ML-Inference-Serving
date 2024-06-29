@@ -49,10 +49,8 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 })
 
 @REQUEST_TIME.time()
-@REQUEST_LATENCY.time()
 @app.route('/predict', methods=['POST'])
 def predict():
-    CURRENT_REQUESTS.inc()
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
