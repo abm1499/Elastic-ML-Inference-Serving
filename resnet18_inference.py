@@ -19,18 +19,15 @@ REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['metho
 CURRENT_REQUESTS = Gauge('current_requests', 'Number of requests currently being processed')
 REQUEST_LATENCY = Histogram('request_latency_seconds', 'Request latency in seconds')
 
-# Load pre-trained ResNet18 model and weights
+#ResNet18
 weights = models.ResNet18_Weights.IMAGENET1K_V1
 model = models.resnet18(weights=weights)
 model.eval()
 
-# Define transformations
 preprocess = weights.transforms()
 
-# Path to the folder containing the images
 folder_path = '/app/imagenet-sample-images-master'
 
-# Get a list of all files in the folder
 file_list = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
 
 @app.route('/images/<path:filename>')
@@ -62,21 +59,16 @@ def predict():
             return jsonify({"error": "No selected file"}), 400
         
         if file:
-            # Read the image file
             img_bytes = file.read()
             img = Image.open(io.BytesIO(img_bytes))
             
-            # Preprocess the image
             inp = preprocess(img).unsqueeze(0)
             
-            # Pass the preprocessed image to the model and get predictions
             with torch.no_grad():
                 preds = model(inp).squeeze(0)
             
-            # Sort the predictions in descending order
             sorted_preds, indices = preds.sort(descending=True)
             
-            # Get top 3 predictions
             top_predictions = [weights.meta["categories"][idx.item()] for idx in indices[:3]]
             
             REQUESTS.labels(method='POST', endpoint='/predict', http_status=200).inc()

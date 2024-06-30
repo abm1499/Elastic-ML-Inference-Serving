@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers=[logging.StreamHandler(sys.stdout)])
 
-PROMETHEUS_URL = "http://10.104.30.224:9090"
+PROMETHEUS_URL = "http://10.104.30.224:9090" #update accordingly
 QUERY = 'rate(request_latency_seconds_sum[30s]) / rate(request_latency_seconds_count[30s])'
 REQUEST_RATE_QUERY = 'sum(rate(request_latency_seconds_count[30s]))'
 DEPLOYMENT_NAME = 'resnet18-inference'
@@ -20,7 +20,7 @@ SCALE_DOWN_THRESHOLD = 0.05
 MIN_REPLICAS = 1
 MAX_REPLICAS = 10
 SCALE_INTERVAL = 15
-COOLDOWN_PERIOD = 60  # seconds
+COOLDOWN_PERIOD = 60
 MIN_REQUEST_RATE = 0.1
 LOW_LATENCY_COUNT = 3
 
