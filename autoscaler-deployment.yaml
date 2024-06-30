@@ -43,3 +43,10 @@ spec:
       - name: autoscaler
         image: abm1499/autoscaler:latest
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"

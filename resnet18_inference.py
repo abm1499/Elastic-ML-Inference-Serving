@@ -9,6 +9,7 @@ import io
 from prometheus_client import make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_client import Counter, Summary, Gauge, Histogram
+from prometheus_client import generate_latest
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -43,23 +44,24 @@ def home():
 
 @app.route('/metrics')
 def metrics():
-    return make_wsgi_app()
-app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-    '/metrics': make_wsgi_app()
-})
+    return generate_latest()
 
-@REQUEST_TIME.time()
 @app.route('/predict', methods=['POST'])
+@REQUEST_TIME.time()
+@REQUEST_LATENCY.time()
 def predict():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    if file:
-        try:
+    CURRENT_REQUESTS.inc()
+    try:
+        if 'file' not in request.files:
+            REQUESTS.labels(method='POST', endpoint='/predict', http_status=400).inc()
+            return jsonify({"error": "No file part"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            REQUESTS.labels(method='POST', endpoint='/predict', http_status=400).inc()
+            return jsonify({"error": "No selected file"}), 400
+        
+        if file:
             # Read the image file
             img_bytes = file.read()
             img = Image.open(io.BytesIO(img_bytes))
@@ -77,11 +79,15 @@ def predict():
             # Get top 3 predictions
             top_predictions = [weights.meta["categories"][idx.item()] for idx in indices[:3]]
             
+            REQUESTS.labels(method='POST', endpoint='/predict', http_status=200).inc()
             return jsonify({"predictions": top_predictions})
-        
-        except Exception as e:
-            app.logger.error(f"Error processing image: {str(e)}")
-            return jsonify({"error": str(e)}), 500
+    
+    except Exception as e:
+        app.logger.error(f"Error processing image: {str(e)}")
+        REQUESTS.labels(method='POST', endpoint='/predict', http_status=500).inc()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        CURRENT_REQUESTS.dec()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
